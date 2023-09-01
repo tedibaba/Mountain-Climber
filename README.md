@@ -19,3 +19,6 @@ Instructions are extremely similar to those of A1:
 ## Running just some of the Tests
 
 `python run_tests.py 1` will run all tests marked with `@number("1.x")`.
+
+## Contributors
+'Ali Alkhatib'
