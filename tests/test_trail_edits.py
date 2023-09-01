@@ -42,6 +42,7 @@ class TestTrailMethods(unittest.TestCase):
         self.assertEqual(res2.following.store, None)
 
         res3 = empty.add_empty_branch_before()
+   
         self.assertIsInstance(res3, Trail)
         self.assertIsInstance(res3.store, TrailSplit)
         self.assertEqual(res3.store.bottom.store, None)
