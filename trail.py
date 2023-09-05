@@ -45,7 +45,9 @@ class TrailSeries:
         Returns a *new* trail which would be the result of:
         Removing the mountain at the beginning of this series.
         """
-        return TrailSeries(self.following, Trail(None))
+        if self.following == Trail(None):
+            return None
+        return TrailSeries(self.following.store.mountain, self.following.store.following)#EROROROROROROROROR
 
     def add_mountain_before(self, mountain: Mountain) -> TrailStore:
         """

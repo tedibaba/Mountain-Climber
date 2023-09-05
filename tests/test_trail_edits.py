@@ -103,6 +103,15 @@ class TestTrailMethods(unittest.TestCase):
         self.assertIsInstance(res4.following.store, TrailSeries)
         self.assertEqual(res4.following.store.mountain, m)
 
+        res5 = series.remove_mountain()
+        self.assertIsNone(res5)
+
+        new_series = TrailSeries(m, Trail(TrailSeries(m2, Trail(None))))
+        res6 = new_series.remove_mountain()
+        self.assertIsInstance(res6, TrailSeries)
+        self.assertEqual(res6.mountain, m2)
+        self.assertEqual(res6.following.store, None)
+
     @number("1.4")
     def test_split(self):
         m = Mountain("M", 7, 8)
@@ -113,3 +122,4 @@ class TestTrailMethods(unittest.TestCase):
         self.assertIsInstance(res, TrailSeries)
         self.assertEqual(res.mountain, m)
         self.assertEqual(res.following.store, None)
+
