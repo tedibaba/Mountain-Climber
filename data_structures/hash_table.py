@@ -223,3 +223,50 @@ class LinearProbeTable(Generic[K, V]):
                 (key, value) = item
                 result += "(" + str(key) + "," + str(value) + ")\n"
         return result
+
+
+
+
+
+
+
+
+
+
+
+
+# class BottomLevelIterator():
+
+#     def __init__(self, hash_table: DoubleKeyTable, key=None) -> None:
+#         self.hash_table = hash_table
+#         self.index = 0
+#         self.given_key = key is not None
+#         if key is not None: #We only want to traverse a certain index in the hash table
+#             self.position = hash_table.hash1(key)
+#             # self.current = hash_table.array[self.position][self.index]
+#         else: #We want to traverse every value in the table
+#             while len(hash_table.array[self.index]) == 0:
+#                 self.index += 1
+#             self.internal_index = 0
+
+#     def __iter__(self):
+#         return self
+    
+#     def __next__(self):
+#         if self.given_key:
+#             if self.index < len(self.hash_table.array[self.position]):
+#                 while self.has
+#                 item = self.hash_table.array[self.position][self.index]
+#                 self.index += 1
+#                 return item
+#             else:
+#                 raise StopIteration
+#         else:
+#             item = self.hash_table.array[self.index][self.internal_index]
+#             self.internal_index += 1
+#             if self.internal_index >= self.hash_table.TABLE_SIZES[self.hash_table.internal_size_index] or self.hash_table.array[self.index][self.internal_index] == None:
+#                 if self.index >= len(self.hash_table) - 1:
+#                     raise StopIteration
+#                 self.index += 1
+#                 self.internal_index = 0
+#             return item
