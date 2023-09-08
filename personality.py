@@ -4,23 +4,19 @@ from enum import auto
 from base_enum import BaseEnum
 from mountain import Mountain
 from trail import Trail
-
-class PersonalityDecision(BaseEnum):
-    TOP = auto()
-    BOTTOM = auto()
-    STOP = auto()
+from personality_decision import PersonalityDecision
 
 class WalkerPersonality(ABC):
-
     def __init__(self) -> None:
         self.mountains = []
+        
 
     def add_mountain(self, mountain: Mountain) -> None:
         self.mountains.append(mountain)
 
     @abstractmethod
     def select_branch(self, top_branch: Trail, bottom_branch: Trail) -> PersonalityDecision:
-        raise NotImplementedError()
+        pass
 
 class TopWalker(WalkerPersonality):
     def select_branch(self, top_branch: Trail, bottom_branch: Trail) -> PersonalityDecision:

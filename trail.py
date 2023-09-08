@@ -1,10 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
-
 from mountain import Mountain
-
+from data_structures.stack_adt import Stack
 from typing import TYPE_CHECKING, Union
-
+from personality_decision import PersonalityDecision
 # Avoid circular imports for typing.
 if TYPE_CHECKING:
     from personality import WalkerPersonality
@@ -98,11 +97,32 @@ class Trail:
 
     def follow_path(self, personality: WalkerPersonality) -> None:
         """Follow a path and add mountains according to a personality."""
-        pass
+        
+        current = self
+        go_top = current.store.top
+        go_bot = current.store.bottom
+        
+
+        while self.store.top is not TrailSeries:
+            if personality.select_branch(current.store.top, current.store.bottom) == PersonalityDecision.TOP:
+                current = go_top
+                personality.add_mountain(current.store.mountain)
+
+            elif personality.select_branch(current.store.top, current.store.bottom) == PersonalityDecision.BOTTOM:
+                current = go_bot
+                personality.add_mountain(current.store.mountain)
+       
+            
+
+            
+        
+    
+            
+
 
     def collect_all_mountains(self) -> list[Mountain]:
         """Returns a list of all mountains on the trail."""
-        pass
+        return 
 
     def difficulty_maximum_paths(self, max_difficulty: int) -> list[list[Mountain]]: # Input to this should not exceed k > 50, at most 5 branches.
         # 1008/2085 ONLY!
