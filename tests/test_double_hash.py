@@ -28,6 +28,7 @@ class TestDoubleHash(unittest.TestCase):
         self.assertRaises(KeyError, lambda: dt._linear_probe("Het", "Liz", False))
         self.assertEqual(dt._linear_probe("Het", "Liz", True), (2, 2))
         dt["Het", "Liz"] = 8 # Linear probing on external table
+        print(dt._linear_probe("Het", "Liz", False))
         self.assertEqual(dt._linear_probe("Het", "Liz", False), (2, 2))
 
     @number("3.2")
