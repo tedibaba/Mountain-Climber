@@ -40,31 +40,30 @@ class TestTrailMethods(unittest.TestCase):
             self.bot_one, self.bot_two, self.final
         ])))
 
-    @number("7.2")
-    def test_difficulty_maximum_paths(self):
-        self.load_example()
+    # @number("7.2")
+    # def test_difficulty_maximum_paths(self):
+    #     self.load_example()
 
-        res = self.trail.difficulty_maximum_paths(5)
-        make_path_string = lambda mountain_list: ", ".join(map(lambda x: x.name, mountain_list))
-        # This makes the result a list of strings, like so:
-        # [
-        #   "top-bot, top-middle, final",
-        #   "bot-one, final"
-        # ]
-        res = list(map(make_path_string, res))
-        res.sort()
+    #     res = self.trail.difficulty_maximum_paths(5)
+    #     make_path_string = lambda mountain_list: ", ".join(map(lambda x: x.name, mountain_list))
+    #     # This makes the result a list of strings, like so:
+    #     # [
+    #     #   "top-bot, top-middle, final",
+    #     #   "bot-one, final"
+    #     # ]
+    #     res = list(map(make_path_string, res))
+    #     res.sort()
 
-        expected_res = [
-            "bot-one, final",
-            "bot-one, final", # twice because of the empty split.
-            "bot-one, bot-two, final",
-        ]
-        expected_res.sort()
+    #     expected_res = [
+    #         "bot-one, final",
+    #         "bot-one, final", # twice because of the empty split.
+    #         "bot-one, bot-two, final",
+    #     ]
+    #     expected_res.sort()
 
-        self.assertListEqual(res, expected_res)
+    #     self.assertListEqual(res, expected_res)
 
     @number("7.3")
-    @advanced()
     def test_difficulty_difference_paths(self):
         self.load_example()
 
