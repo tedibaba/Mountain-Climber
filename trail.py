@@ -49,7 +49,7 @@ class TrailSeries:
         """
         if self.following == Trail(None):
             return None
-        return TrailSeries(self.following.store.mountain, self.following.store.following)#EROROROROROROROROR
+        return TrailSeries(self.following.store.mountain, self.following.store.following)
 
     def add_mountain_before(self, mountain: Mountain) -> TrailStore:
         """
@@ -102,7 +102,43 @@ class Trail:
 
     def follow_path(self, personality: WalkerPersonality) -> None:
         """Follow a path and add mountains according to a personality."""
-        pass
+
+
+        stack  = LinkedStack() #Only trail splits will end up here
+        stack.push([self, 0])
+        while not stack.is_empty():
+            branch, seen = stack.peek() if stack.peek()[1] == 0 else stack.pop()
+            path = personality.select_branch(branch.store.top, branch.store.bottom).value
+            if path == 3:
+                break #Stop the traversal
+
+            if not seen:
+                stack.peek()[1] = 1
+                if path == 1:
+                    if isinstance(branch.store.top.store, TrailSeries):
+                        personality.add_mountain(branch.store.top.store.mountain)
+                        if isinstance(branch.store.top.store.following.store, TrailSplit):
+                            stack.push([branch.store.top.store.following, 0])
+
+                    elif isinstance(branch.store.top.store, TrailSplit):
+                        stack.push([branch.store.top, 0])
+
+                elif path == 2:
+                    if isinstance(branch.store.bottom.store, TrailSeries):
+                        personality.add_mountain(branch.store.bottom.store.mountain)
+                        if isinstance(branch.store.bottom.store.following.store, TrailSplit):
+                            stack.push([branch.store.bottom.store.following, 0])
+
+                    elif isinstance(branch.store.bottom.store, TrailSplit):
+                        stack.push([branch.store.bottom, 0])
+               
+            else:
+                if branch.store.following != Trail(None):
+                    personality.add_mountain(branch.store.following.store.mountain)
+
+
+
+
 
     def collect_all_mountains(self) -> list[Mountain]:
         """Returns a list of all mountains on the trail."""
@@ -129,7 +165,9 @@ class Trail:
 
     def difficulty_maximum_paths(self, max_difficulty: int) -> list[list[Mountain]]: # Input to this should not exceed k > 50, at most 5 branches.
         # 1008/2085 ONLY!
-        pass
+        paths = self.collect_all_paths()
+        path = [path for path in paths if max([mountain.difficulty_level for mountain in path]) <= max_difficulty]
+        return path
 
     def difficulty_difference_paths(self, max_difference: int) -> list[list[Mountain]]: # Input to this should not exceed k > 50, at most 5 branches.        
         res = []
