@@ -1,8 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
-
 from mountain import Mountain
-
+from data_structures.linked_stack import LinkedStack
 from typing import TYPE_CHECKING, Union
 
 from data_structures.linked_stack import LinkedStack
