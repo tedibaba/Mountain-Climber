@@ -124,3 +124,18 @@ class TestDoubleHash(unittest.TestCase):
         # with an iterator.
         self.assertRaises(BaseException, lambda: next(key_iterator))
         self.assertRaises(BaseException, lambda: next(value_iterator))
+
+    @number("3.6")
+    def test_delete_hard(self):
+        dt = DoubleKeyTable(sizes=[12], internal_sizes=[5])
+        dt.hash1 = lambda k: ord(k[0]) % 12
+        dt.hash2 = lambda k, sub_table: ord(k[-1]) % 5
+        #Cluster creation
+        dt["t", "a"] = 1
+        dt["ta", "tb"] = 2
+        dt["tb", "tta"] = 3
+        dt["tc", "c"] = 4
+        dt["td", "d"] = 5
+        print(dt.array[:])
+        del dt["tb", "tta"]
+        print(dt.array[:])

@@ -28,3 +28,23 @@ class Mountain:
         else:
             return False
 
+    def __le__(self, mountain):
+        if self.difficulty_level < mountain.difficulty_level:
+            return True
+        elif self.difficulty_level > mountain.difficulty_level:
+            return False
+        elif self.name < mountain.name:
+            return True
+        else:
+            return False
+        
+    def __ge__(self, mountain):
+        if self.difficulty_level > mountain.difficulty_level:
+            return True
+        elif self.difficulty_level < mountain.difficulty_level:
+            return False
+        elif self.name > mountain.name:
+            return True
+        else:
+            return False
+

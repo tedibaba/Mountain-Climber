@@ -40,12 +40,14 @@ class InfiniteHashTable(Generic[K, V]):
         :raises KeyError: when the key doesn't exist.
         """
         pos = self.hash(key)
-        if isinstance(self.array[pos][1], InfiniteHashTable):
+        if self.array[pos] is None:
+            raise KeyError(key)
+        elif isinstance(self.array[pos][1], InfiniteHashTable):
             return self.array[pos][1][key]
         elif self.array[pos][0] == key:
             return self.array[pos][1] 
-        else:
-            raise KeyError(key)
+        
+            
 
     def __setitem__(self, key: K, value: V) -> None:
         """
@@ -57,11 +59,15 @@ class InfiniteHashTable(Generic[K, V]):
             self.count += 1
         else:
             if not isinstance(self.array[pos][1], InfiniteHashTable):
+                if self.array[pos][0] == key:#Need to consider reassign
+                    self.array[pos] = (key,value)
+                    return
                 temp = self.array[pos] #We need to reassign this value into the hash table about to be created
                 self.array[pos] = (key[:self.level + 1], InfiniteHashTable(self.level + 1))
-                self.array[pos][1][temp[0]] = temp[1]
                 self.count -= 1 #We reduce the count because this spot in the table is not holding a base value anymore
                 self.sub_array_count += 1
+                self.array[pos][1][temp[0]] = temp[1]
+
             self.array[pos][1][key] = value #Recurse
 
     def __delitem__(self, key: K) -> None:
@@ -91,19 +97,19 @@ class InfiniteHashTable(Generic[K, V]):
             Worst case
         """
         pos = self.hash(key)
-
+        print(self.array[pos])
         if pos is not None:
-            if self.array[pos][0] == key:
+            
+            if self.array[pos][0] == key and not isinstance(self.array[pos][1], InfiniteHashTable):
                 self.array[pos] = None
                 self.count -= 1
                 res1 = [item for item in self.array if item is not None and not isinstance(item[1], InfiniteHashTable)] #Getting all values in this hash table (not any in the sub hash tables)
 
-                return (self, res1[0]) if res1 != [] and len(res1) == 1 else None
+                return (self, res1[0]) if len(res1) == 1 else None #Only if res1 has only one element, then we might need to collapse this infinite hash table
 
             elif isinstance(self.array[pos][1], InfiniteHashTable):
-                res = self.array[pos][1].del_helper(key, self)
+                res = self.array[pos][1].del_helper(key, parent)
                 if res is not None:
-
                     if  res[0].count <= 1 and res[0].sub_array_count <= 0: #Checking if only one element is left in the sub hash table
                         # Collapse this hash table and place the single value in the parent hash table
                         self.count += 1
@@ -111,7 +117,7 @@ class InfiniteHashTable(Generic[K, V]):
                         self.array[pos] = (res[1][0], res[1][1])
                         return (self, res[1])
                     
-                    elif self == parent and res[0].sub_array_count <= 1: #If we are at the parent, we cannot go up anymore
+                    elif self == parent and res[0].sub_array_count <= 0 and res[0].count <= 1: #If we are at the parent, we cannot go up anymore
                         self.array[pos] = (res[1][0], res[1][1])
                         self.count += 1
                         self.sub_array_count -= 1
@@ -135,6 +141,7 @@ class InfiniteHashTable(Generic[K, V]):
             if i is not None and isinstance(i[1], InfiniteHashTable):
                res += len(i[1]) 
         return res
+
 
     def __str__(self) -> str:
         """

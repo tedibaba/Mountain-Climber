@@ -4,8 +4,13 @@ from enum import auto
 from base_enum import BaseEnum
 from mountain import Mountain
 from trail import Trail
-from personality_decision import PersonalityDecision
+
 from trail import Trail,TrailSeries,TrailSplit
+
+class PersonalityDecision(BaseEnum):
+    TOP = auto()
+    BOTTOM = auto()
+    STOP = auto()
 
 class WalkerPersonality(ABC):
     def __init__(self) -> None:

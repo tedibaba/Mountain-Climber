@@ -72,12 +72,35 @@ class DoubleKeyTable(Generic[K1, K2, V]):
 
         :raises KeyError: When the key pair is not in the table, but is_insert is False.
         :raises FullError: When a table is full and cannot be inserted.
+
+        :complexity:
+            :best case: O(hash(key1) + hash(key2))
+            :worst case: O(hash(key1) + n + hash(key2) + m)
+            where n is the table size of the primary hash table and 
+            m is the table size of the secondary hash table
+            
         """
-        pos1 = self.find_top_position(key1, is_insert)
+        pos1 = self._find_top_position(key1, is_insert)
         
         return (pos1, self.array[pos1][1]._linear_probe(key2, is_insert))
 
-    def find_top_position(self, key1, is_insert):
+    def _find_top_position(self, key1: K1, is_insert: bool) -> int:
+        """
+        The function finds the top position for a given key in a hash table using linear probing.
+        
+        :param key1: The parameter "key1" represents the key that needs to be inserted or searched for
+        in the hash table.
+        :param is_insert: The parameter "is_insert" is a boolean value that indicates whether the
+        operation being performed is an insertion or not. 
+        :return: The position `pos1` is being returned.
+        :raises KeyError: If we are searching for a key but it does not exist.
+        :raises FullError: If there are no more empty spots for a key to be inserted
+
+        :complexity:
+            :best case: O(hash(key1))
+            :worst case: O(hash(key1) + n)
+            where n is table size of the primary hash table
+        """
         pos1 = self.hash1(key1)
 
         for _ in range(self.top_level_count + 1):
@@ -94,7 +117,7 @@ class DoubleKeyTable(Generic[K1, K2, V]):
             pos1 = (pos1 + 1) % self.table_size
         else:
             if is_insert:
-                raise FullError
+                raise FullError()
             else:
                 raise KeyError(key1)
         return pos1
@@ -150,6 +173,13 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         Get the value at a certain key
 
         :raises KeyError: when the key doesn't exist.
+
+        :complexity:
+            :best case: O(m + n)
+            :worst case: O(m + n + p + s)
+            where m is hash(key[0]), n is hash(key[1]),
+            where p is the table size of the primary hash table and 
+            s is the table size of the secondary hash table
         """
         pos1, pos2 = self._linear_probe(key[0], key[1], False)
         return self.array[pos1][1][key[1]][2]
@@ -157,17 +187,24 @@ class DoubleKeyTable(Generic[K1, K2, V]):
     def __setitem__(self, key: tuple[K1, K2], data: V) -> None:
         """
         Set an (key, value) pair in our hash table.
+
+        :param key: A tuple containing two keys to which the value will be mapped to
+        :param data: The data that is to be mapped
+
+        :complexity:
+            :best case: O(l  + m)
+            :worst case: O(N * hash(K) + N^2)
+            where N is len(self), l is the hash(key[0]) and m is hash(key[1])
         """
 
         pos1, pos2 = self._linear_probe(key[0], key[1], True)
         if self.array[pos1][1].array[pos2] is None:
             self.count += 1
-        if len(self.array[pos1][1]) <= 0:
+        if len(self.array[pos1][1]) <= 0: #A key has not been assigned to this hash table yet
             self.top_level_count += 1
             self.array[pos1] = (key[0], self.array[pos1][1])
         
-        inner_hash_table = self.array[pos1][1]
-        inner_hash_table[key[1]] = (key[0], key[1], data)
+        self.array[pos1][1][key[1]] = (key[0], key[1], data)
 
         if self.top_level_count > self.table_size / 2:
             self._rehash()
@@ -178,13 +215,28 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         Deletes a (key, value) pair in our hash table.
 
         :raises KeyError: when the key doesn't exist.
+
+        :complexity:
+            :best case: O(l + m)
+            :worst case: O(N * l + N^2 + T * m + T^2)
+            where N is len(self), l is hash(key[0]), T is the length of the sub hash table,
+            m is hash(key[1])
         """
         pos1, pos2 = self._linear_probe(key[0], key[1], False)
 
         self.array[pos1][1].__delitem__(key[1])
 
         if len(self.array[pos1][1]) <= 0:
-            self.array[pos1] = (None, LinearProbeTable(self.internal_sizes))
+            self.array[pos1] = (None, LinearProbeTable(self.internal_sizes)) 
+        #We need to rehash the cluster
+        pos1 = (pos1 + 1) % self.table_size
+        while self.array[pos1] is not None and self.array[pos1][0] is not None:
+            temp = self.array[pos1]
+            self.array[pos1] = None
+            new_pos = self._find_top_position(temp[0], True)
+            self.array[new_pos] = temp
+            pos1 = (pos1 + 1) % self.table_size
+
 
     def _rehash(self) -> None:
         """
@@ -200,9 +252,6 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         old_array = self.array
         self.count = 0
         self.array = ArrayR(self.TABLE_SIZES[self.top_size_index])
-
-        for i in range(self.TABLE_SIZES[self.top_size_index]):
-            self.array[i] = (None,LinearProbeTable(self.internal_sizes))
 
         for i in range(len(old_array)):
             if old_array[i] is not None:
@@ -231,10 +280,14 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         Not required but may be a good testing tool.
         """
         pass
-        raise NotImplementedError()
+
     
 
 class TopLevelIterator():
+    """
+    This is a iterator that iterates over the keys of the double key hash table. Whether its the primary or 
+    secondary key that is iterated over depends on whether or not a key is passed at initialization
+    """
     def __init__(self, hash_table: DoubleKeyTable, key=None) -> None:
         self.hash_table = hash_table
         self.index = 0        
@@ -242,7 +295,7 @@ class TopLevelIterator():
         self.given_key = key is not None #If key is not None, then we want to return the secondary keys for the given key
 
         if self.given_key:
-            self.pos1 = self.hash_table.find_top_position(key, False)
+            self.pos1 = self.hash_table._find_top_position(key, False)
 
 
     def __iter__(self):
@@ -275,6 +328,10 @@ class TopLevelIterator():
         return item
 
 class BottomLevelIterator():
+    """
+    This is an iterator that iterates over the values of the double key hash table. Whether all the values in the table 
+    are iterated over or just values under a certain key is determined by if a key is passed at initialization
+    """
 
     def __init__(self, hash_table: DoubleKeyTable, key=None) -> None:
         self.hash_table = hash_table
@@ -283,7 +340,7 @@ class BottomLevelIterator():
         self.given_key = key is not None 
 
         if self.given_key:
-            self.pos1 = self.hash_table.find_top_position(key, False)
+            self.pos1 = self.hash_table._find_top_position(key, False)
         else:
             self.internal_index = 0
 

@@ -48,7 +48,10 @@ class TrailSeries:
         """
         if self.following == Trail(None):
             return None
-        return TrailSeries(self.following.store.mountain, self.following.store.following)
+        elif isinstance(self.following.store, TrailSeries): 
+            return TrailSeries(self.following.store.mountain, self.following.store.following)
+        elif isinstance(self.following.store, TrailSplit):
+            return self.following
 
     def add_mountain_before(self, mountain: Mountain) -> TrailStore:
         """
@@ -186,14 +189,14 @@ class Trail:
 
     def difficulty_maximum_paths(self, max_difficulty: int) -> list[list[Mountain]]: # Input to this should not exceed k > 50, at most 5 branches.
         # 1008/2085 ONLY!
-        paths = self.collect_all_paths()
+        paths = self.collect_all_paths([])
         path = [path for path in paths if max([mountain.difficulty_level for mountain in path]) <= max_difficulty]
         return path
 
     def difficulty_difference_paths(self, max_difference: int) -> list[list[Mountain]]: # Input to this should not exceed k > 50, at most 5 branches.        
         res = []
         
-        paths = self.collect_all_paths()
+        paths = self.collect_all_paths([])
         for path in paths:
             min_max_path = [float("inf"), 0] #Kept in order as min, max
             for mountain in path:
@@ -202,12 +205,11 @@ class Trail:
             if min_max_path[1] - min_max_path[0] <= max_difference:
                 res.append(path)
         return res
+    
 
-
-    def collect_all_paths(self):
+    def collect_all_paths(self, res):
         if isinstance(self.store, TrailSplit):
-            res = []
-            top, bottom, following = self.store.top.collect_all_paths(), self.store.bottom.collect_all_paths(), self.store.following.collect_all_paths()
+            top, bottom, following = self.store.top.collect_all_paths([]), self.store.bottom.collect_all_paths([]), self.store.following.collect_all_paths([])
             top.extend(bottom)
             for path in following:
                 for branch in top:
@@ -215,8 +217,7 @@ class Trail:
             return res
 
         elif isinstance(self.store, TrailSeries):
-            res = []
-            following = self.store.following.collect_all_paths()
+            following = self.store.following.collect_all_paths([])
             for path in following:
                 res.append([self.store.mountain] + path)
 
@@ -252,7 +253,17 @@ Trail(TrailSeries(final, Trail(None)))
 #     Trail(None)))))
 # trail =  Trail(TrailSeries(top_top, Trail(TrailSeries(top_bot, Trail(TrailSeries(top_mid, Trail(None)))))))
 
-# print(trail.difficulty_difference_paths(3))
+# print(trail.collect_all_paths([]))
 
 
 
+top_one = Mountain("top-one", 6, 3)
+top_two = Mountain("top-two", 3, 5)
+top_three = Mountain("top-three", 7, 2)
+top_four = Mountain("top_four", 2, 5)
+top_five = Mountain("top_five", 2, 3)
+
+trail = Trail(TrailSplit(Trail(TrailSeries(top_one, Trail(TrailSeries(top_two, Trail(TrailSeries(top_three, Trail(None))))))), Trail(None), 
+                         Trail(None)))
+
+print(trail.collect_all_paths([]))
