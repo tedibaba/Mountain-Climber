@@ -78,13 +78,15 @@ class DoubleKeyTable(Generic[K1, K2, V]):
             :worst case: O(hash(key1) + n + hash(key2) + m)
             where n is the table size of the primary hash table and 
             m is the table size of the secondary hash table
+
+            In the worst case, both tables need to probed entirely to find an empty position to insert or to find the keys we are looking for.
             
         """
-        pos1 = self._find_top_position(key1, is_insert)
+        pos1 = self._external_linear_probe(key1, is_insert)
         
         return (pos1, self.array[pos1][1]._linear_probe(key2, is_insert))
 
-    def _find_top_position(self, key1: K1, is_insert: bool) -> int:
+    def _external_linear_probe(self, key1: K1, is_insert: bool) -> int:
         """
         The function finds the top position for a given key in a hash table using linear probing.
         
@@ -175,9 +177,8 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         :raises KeyError: when the key doesn't exist.
 
         :complexity:
-            :best case: O(m + n)
-            :worst case: O(m + n + p + s)
-            where m is hash(key[0]), n is hash(key[1]),
+            :best case: O(hash(key[0]) + hash(key[1]))
+            :worst case: O(hash(key[0]) + hash(key[1]) + p + s)
             where p is the table size of the primary hash table and 
             s is the table size of the secondary hash table
         """
@@ -192,9 +193,11 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         :param data: The data that is to be mapped
 
         :complexity:
-            :best case: O(l  + m)
-            :worst case: O(N * hash(K) + N^2)
-            where N is len(self), l is the hash(key[0]) and m is hash(key[1])
+            :best case: O(hash(key[0]) + hash(key[1])
+            :worst case: O(N * hash(K) + N^2 + hash(k0))
+            where N is the length of the new hash table, K is the longest key to be hashed during rehashing,
+            k0 is the key from which the rehashing is not performed on
+            Worst case occurs when the hash table needs to be rehashed
         """
 
         pos1, pos2 = self._linear_probe(key[0], key[1], True)
@@ -217,25 +220,27 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         :raises KeyError: when the key doesn't exist.
 
         :complexity:
-            :best case: O(l + m)
-            :worst case: O(N * l + N^2 + T * m + T^2)
-            where N is len(self), l is hash(key[0]), T is the length of the sub hash table,
-            m is hash(key[1])
+            :best case: O(hash(key[0]) + hash(key[1]))
+            :worst case: O(N * hash(K) + N^2 + hash(K0))
+            where N is the length of the hash table being deleted from, k is the longest key in the hash table being deleted from, and k0 is
+            the from which the hash table is not deleting.
+
+            It is impossible for the delete to occur at both the primary and secondary level
         """
         pos1, pos2 = self._linear_probe(key[0], key[1], False)
 
         self.array[pos1][1].__delitem__(key[1])
 
-        if len(self.array[pos1][1]) <= 0:
+        if len(self.array[pos1][1]) == 0:
             self.array[pos1] = (None, LinearProbeTable(self.internal_sizes)) 
-        #We need to rehash the cluster
-        pos1 = (pos1 + 1) % self.table_size
-        while self.array[pos1] is not None and self.array[pos1][0] is not None:
-            temp = self.array[pos1]
-            self.array[pos1] = None
-            new_pos = self._find_top_position(temp[0], True)
-            self.array[new_pos] = temp
+            #We need to rehash the cluster
             pos1 = (pos1 + 1) % self.table_size
+            while self.array[pos1] is not None and self.array[pos1][0] is not None:
+                temp = self.array[pos1]
+                self.array[pos1] = None
+                new_pos = self._external_linear_probe(temp[0], True)
+                self.array[new_pos] = temp
+                pos1 = (pos1 + 1) % self.table_size
 
 
     def _rehash(self) -> None:
@@ -295,7 +300,7 @@ class TopLevelIterator():
         self.given_key = key is not None #If key is not None, then we want to return the secondary keys for the given key
 
         if self.given_key:
-            self.pos1 = self.hash_table._find_top_position(key, False)
+            self.pos1 = self.hash_table._external_linear_probe(key, False)
 
 
     def __iter__(self):
@@ -340,7 +345,7 @@ class BottomLevelIterator():
         self.given_key = key is not None 
 
         if self.given_key:
-            self.pos1 = self.hash_table._find_top_position(key, False)
+            self.pos1 = self.hash_table._external_linear_probe(key, False)
         else:
             self.internal_index = 0
 

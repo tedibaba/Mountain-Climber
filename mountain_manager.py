@@ -15,6 +15,12 @@ class MountainManager:
         The function adds a mountain object to a dictionary using its difficulty level and name as the
         key.
         
+        :complexity:
+            :best case: O(hash(k1) + hash(k2))
+            :worst case: O(N * hash(k) + N^2 + hash)
+            where N is the length of the new hash table, K is the longest key to be hashed during rehashing,
+            k0 is the key from which the rehashing is not performed on
+
         :param mountain: The parameter "mountain" is of type Mountain
         """
 
@@ -27,6 +33,12 @@ class MountainManager:
         name.
         
         :param mountain: The parameter "mountain" is of type Mountain
+        :complexity: 
+            :best case: O(hash(k1) + hash(k2))
+            :worst case: O(N * hask(k) + N^2 + hash(k0))
+            where N is the length of the hash table being deleted from, k1 is the difficulty of the string,
+            k2 is the mountain's name, k is the longest key in the hash table being deleted from, and k0 is
+            the from which the hash table is not deleting.
         
         :raises KeyError: If the mountain to delete does not exist
         """
@@ -83,5 +95,6 @@ class MountainManager:
         for difficulty in difficulties:
             diff_mountains = self.mountains.values(difficulty)
             mountain_groups.append(diff_mountains)
+        print(mountain_groups)
         return mountain_groups
         

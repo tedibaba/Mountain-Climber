@@ -38,11 +38,16 @@ class InfiniteHashTable(Generic[K, V]):
         Get the value at a certain key
 
         :raises KeyError: when the key doesn't exist.
+        :complexity: 
+            :best case: O(1)
+            :worst case: O(len(key))
+            Best case occurs when the key is in the original hash table
+            
         """
         pos = self.hash(key)
         if self.array[pos] is None:
             raise KeyError(key)
-        elif isinstance(self.array[pos][1], InfiniteHashTable):
+        elif isinstance(self.array[pos][1], InfiniteHashTable): #This elif statement must be above the next elif because it is possible the key matches the entry but there is more recursion to be done
             return self.array[pos][1][key]
         elif self.array[pos][0] == key:
             return self.array[pos][1] 
@@ -52,6 +57,12 @@ class InfiniteHashTable(Generic[K, V]):
     def __setitem__(self, key: K, value: V) -> None:
         """
         Set an (key, value) pair in our hash table.
+
+        :complexity:
+            :best case: O(1)
+            :worst case: O(len(key))
+            Best case occurs when the key is in the original hash table
+            Worst case occurs when each letter of the key has been mapped to a infinite hash table which must be traversed in order to set the item
         """
         pos = self.hash(key)
         if self.array[pos] is None: #Base case
@@ -75,6 +86,13 @@ class InfiniteHashTable(Generic[K, V]):
         Deletes a (key, value) pair in our hash table.
 
         :raises KeyError: when the key doesn't exist.
+        
+        :complexity:
+            :best case: O(len(key))
+            :worst case: O(len(key) + table_size) 
+
+            Best case occurs when the element to be deleted is in the parent hash table.
+            Worst case when the element to be deleted requires a hash table for each letter to be traversed.
         """
         self.del_helper(key, self)
 
@@ -90,14 +108,9 @@ class InfiniteHashTable(Generic[K, V]):
         :param parent: The "parent" parameter represents the head infinite table
         :raises KeyError: when the key does not exist.
 
-        :complexity:
-            :best case: O(len(key))
-            :worst case: O(len(key) + table_size)
-            Best case occurs when the element to be deleted is in the parent hash table.
-            Worst case
+        :complexity: see __delitem__
         """
         pos = self.hash(key)
-        print(self.array[pos])
         if pos is not None:
             
             if self.array[pos][0] == key and not isinstance(self.array[pos][1], InfiniteHashTable):
@@ -194,37 +207,56 @@ class InfiniteHashTable(Generic[K, V]):
         Returns all keys currently in the table in lexicographically sorted order.
 
         :complexity:
-            :best case: O(n+ klog(k))
-            :worst case: O(nm + klog(k))
-            where n is the table size, m is the length of the keys, and k is the number of keys
-
-        """
-        #Get all the keys 
-        keys = self.get_keys()
-        return mergesort(keys)
-
-       
-    def get_keys(self) -> list[str]:
-        """
-        The function recursively retrieves all keys from an InfiniteHashTable object and returns them as
-        a list.
-        :return: a list of keys from the given `InfiniteHashTable` object.
-
-        :complexity:
-            :best case: O(n)
-            :worst case: O(nm)
-            where n is the table_size and m is the length of the keys
+            :best case: O(a)
+            :worst case: O(nal)
+            where a is the table_size, l is the length of the longest key and 
+            n is the number of words inserted 
             The best case occurs when there are no sub hash tables
 
         """
 
         elems = []
-        for elem in self.array:
-            if elem is not None:
-                if isinstance(elem[1], InfiniteHashTable):
-                    elems += elem[1].get_keys()
+        if self.array[self.TABLE_SIZE - 1] is not None: #At the bottom, there are words with no matter letters so we must add those first
+            elems.append(self.array[self.TABLE_SIZE - 1][0])
+        for i in range(self.TABLE_SIZE):
+            index = (19 + i) % self.TABLE_SIZE #Words starting with a are not at the first index so we must calculate an offset so we can start at a
+            if index == self.TABLE_SIZE - 1:
+                continue
+            if self.array[index] is not None:
+                if isinstance(self.array[index][1], InfiniteHashTable):
+                    elems += self.array[index][1].sort_keys()
                 else:
-                    elems.append(elem[0])
+                    elems.append(self.array[index][0])
         return elems
 
 
+
+
+if __name__ == "__main__":
+    inf = InfiniteHashTable()
+    
+    words = ['on', 'language', 'rough', 'cpython', 'way', 'tribute', 'while', 'perls', 'abc', 'difficult', 'preferably', 'increases', 'fun', 'core', 'program', 'was', 'contrast', 'namea', 'should', 'alex', 'their', 'written', 'interfaces', 'espoused', 'grammar', 'rossums', 'standard', 'building', 'style', 'by', 'functions', 'one', 'made', 'syntax', 'group', 'van', 'speed', 'emphasis', 'easily', 'particularly', 'has', 'reject', 'stemmed', 'software', 'idioms', 'patches', 'moving', 'improved', 'timecritical', 'giving', 'execution', 'sketch', 'and', 'describe', 'would', 'oneand', 'for', 'implementation', 'or', 'examples', 'into', 'neologism', 'frustrations', 'a', 'optimization', 'fluency', 'reference', 'oftenused', 'natural', 'can', 'not', 'programmable', 'related', 'reads', 'rather', 'with', 'show', 'lesscluttered', 'something', 'avoid', 'this', 'british', 'clarity', 'playful', 'minimalist', 'do', 'means', 'materials', 'strive', 'in', 'spam', 'adding', 'functionality', 'be', 'of', 'all', 'vision', 'conform', 'modules', 'it', 'foo', 'via', 'languages', 'meanings', 'compliment', 'pythonand', 'eggs', 'unpythonic', 'methodology', 'applications', 'programming', 'range', 'book', 'popular', 'aim', 'choice', 'author', 'such', 'pypy', 'pythonic', 'interpreter', 'large', 'small', 'wrote', 'using', 'to', 'clever', 'understand', 'readability', 'common', 'called', 'martelli', 'pythons', 'designed', 'transcription', 'compiler', 'other', 'from', 'highly', 'is', 'tutorials', 'noncritical', 'instead', 'modularity', 'community', 'his', 'existing', 'culture', 'more', 'embraces', 'use', 'strives', 'extension', 'the', 'simpler', 'wide', 'approach', 'parts', 'cost', 'reflected', 'than', 'offer', 'fellow', 'well', 'marginal', 'extensible', 'developers', 'bar', 'that', 'which', 'there', 'python', 'may', 'another', 'foundation', 'only', 'motto', 'at', 'like', 'approaches', 'premature', 'terms', 'opposite', 'oneobvious', 'monty', 'occasionally', 'justintime', 'code', 'library', 'philosophy', 'its', 'compact', 'as', 'coding', 'c', 'crosscompiling', 'comedy', 'considered']
+
+    for w in words:
+        inf[w] = 'value of '+ w
+
+    assert inf.sort_keys() == sorted(words)
+    assert len(inf) == len(words)
+
+    locations = [[7, 6, 26], [4, 19, 6, 25, 13, 19, 25, 23, 26], [10, 7, 13], [21, 8], [15, 19, 17], [12, 10, 1], [15, 0, 1, 4], [8, 23], [19, 20], [22, 1], [8, 10, 23, 24], [1, 6, 21], [24, 13, 6, 26], [21, 7, 10], [8, 10, 7, 25, 10, 19, 5, 26], [15, 19, 11], [21, 7, 6, 12], [6, 19, 5], [11, 0, 7, 13], [19, 4, 23], [12, 0, 23, 1], [15, 10, 1], [1, 6, 12, 23, 10, 24], [23, 11], [25, 10, 19], [10, 7, 11], [11, 12, 19], [20, 13], [11, 12, 17], [20, 17], [24, 13, 6, 21, 12, 1, 7, 6, 11], [7, 6, 23, 26], [5, 19, 22], [11, 17], [25, 10, 7], [14, 19], [11, 8, 23], [23, 5, 8], [23, 19], [8, 19, 10, 12, 1], [0, 19], [10, 23, 2], [11, 12, 23], [11, 7, 24], [1, 22], [8, 19, 12], [5, 7, 14], [1, 5, 8, 10], [12, 1], [25, 1], [23, 16, 23], [11, 3], [19, 6, 22], [22, 23, 11, 21], [15, 7], [7, 6, 23, 19], [24, 7, 10], [1, 5, 8, 4], [7, 10], [23, 16, 19], [1, 6, 12, 7], [6, 23], [24, 10, 13], [19, 26], [7, 8, 12], [24, 4], [10, 23, 24, 23], [7, 24, 12], [6, 19, 12], [21, 19, 6], [6, 7, 12], [8, 10, 7, 25, 10, 19, 5, 5, 19], [10, 23, 4], [10, 23, 19, 22, 11], [10, 19, 12], [15, 1, 12], [11, 0, 7, 15], [4, 23], [11, 7, 5], [19, 14], [12, 0, 1], [20, 10], [21, 4, 19], [8, 4], [5, 1], [22, 7], [5, 23, 19, 6, 11], [5, 19, 12], [11, 12, 10, 1, 14, 23, 26], [1, 6, 26], [11, 8, 19], [19, 22], [24, 13, 6, 21, 12, 1, 7, 6, 19], [20, 23], [7, 24, 26], [19, 4, 4], [14, 1, 11], [21, 7, 6, 24], [5, 7, 22, 13, 4, 23], [1, 12, 26], [24, 7, 7], [14, 1, 19], [4, 19, 6, 25, 13, 19, 25, 23, 11], [5, 23, 19, 6, 1], [21, 7, 5, 8, 4], [8, 17, 12, 0, 7, 6, 19], [23, 25], [13, 6, 8], [5, 23, 12], [19, 8, 8, 4], [8, 10, 7, 25, 10, 19, 5, 5, 1], [10, 19, 6], [20, 7], [8, 7], [19, 1], [21, 0], [19, 13], [11, 13], [8, 17, 8], [8, 17, 12, 0, 7, 6, 1], [1, 6, 12, 23, 10, 8], [4, 19, 10], [11, 5], [15, 10, 7], [13, 11, 1], [12, 7], [21, 4, 23], [13, 6, 22], [10, 23, 19, 22, 19], [21, 7, 5, 5, 7], [21, 19, 4], [5, 19, 10, 12], [8, 17, 12, 0, 7, 6, 11], [22, 23, 11, 1], [12, 10, 19], [21, 7, 5, 8, 1], [7, 12], [24, 10, 7], [0, 1, 25], [1, 11], [12, 13], [6, 7, 6], [1, 6, 11], [5, 7, 22, 13, 4, 19], [21, 7, 5, 5, 13], [0, 1, 11], [23, 16, 1], [21, 13], [5, 7, 10], [23, 5, 20], [13, 11, 23], [11, 12, 10, 1, 14, 23, 11], [23, 16, 12, 23, 6, 11, 1, 7], [12, 0, 23, 26], [11, 1], [15, 1, 22], [19, 8, 8, 10, 7, 19, 21, 0, 26], [8, 19, 10, 12, 11], [21, 7, 11], [10, 23, 24, 4], [12, 0, 19, 6], [7, 24, 24], [24, 23], [15, 23], [5, 19, 10, 25], [23, 16, 12, 23, 6, 11, 1, 20], [22, 23, 14], [20, 19], [12, 0, 19, 12], [15, 0, 1, 21], [12, 0, 23, 10], [8, 17, 12, 0, 7, 6, 26], [5, 19, 17], [19, 6, 7], [24, 7, 13], [7, 6, 4], [5, 7, 12], [19, 12], [4, 1, 3], [19, 8, 8, 10, 7, 19, 21, 0, 23], [8, 10, 23, 5], [12, 23], [7, 8, 8], [7, 6, 23, 7], [5, 7, 6], [7, 21], [2], [21, 7, 22, 23], [4, 1, 20], [8, 0], [1, 12, 11], [21, 7, 5, 8, 19], [19, 11], [21, 7, 22, 1], [21, 26], [21, 10], [21, 7, 5, 23], [21, 7, 6, 11]]
+    for w in words:
+        assert inf.get_location(w) == locations.pop(0)
+
+
+    del inf['python']
+    assert len(inf) == len(words) - 1
+    assert 'python' not in inf
+
+    inf['python'] = 'new value'
+    assert inf['python'] == 'new value'
+
+    assert len(inf) == len(words)
+
+    for w in words:
+        del inf[w]
+    assert len(inf) == 0

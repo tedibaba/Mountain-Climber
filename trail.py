@@ -26,7 +26,7 @@ class TrailSplit:
 
     def remove_branch(self) -> TrailStore:
         """Removes the branch, should just leave the remaining following trail."""
-        return TrailSeries(self.following.store.mountain, Trail(None))
+        return self.following.store
 
 
 @dataclass
@@ -46,12 +46,8 @@ class TrailSeries:
         Returns a *new* trail which would be the result of:
         Removing the mountain at the beginning of this series.
         """
-        if self.following == Trail(None):
-            return None
-        elif isinstance(self.following.store, TrailSeries): 
-            return TrailSeries(self.following.store.mountain, self.following.store.following)
-        elif isinstance(self.following.store, TrailSplit):
-            return self.following
+       
+        return self.following.store
 
     def add_mountain_before(self, mountain: Mountain) -> TrailStore:
         """
@@ -100,7 +96,7 @@ class Trail:
         Returns a *new* trail which would be the result of:
         Adding an empty branch before everything currently in the trail.
         """
-        return Trail(TrailSplit(Trail(None), Trail(None), Trail(self.store)))
+        return Trail(TrailSplit(Trail(None), Trail(None), self))
 
     def follow_path(self, personality: WalkerPersonality) -> None:
         """Follow a path and add mountains according to a personality.
@@ -210,7 +206,7 @@ class Trail:
     def collect_all_paths(self, res):
         if isinstance(self.store, TrailSplit):
             top, bottom, following = self.store.top.collect_all_paths([]), self.store.bottom.collect_all_paths([]), self.store.following.collect_all_paths([])
-            top.extend(bottom)
+            top.extend(bottom) #All top paths and bottom paths should be followed by the following path
             for path in following:
                 for branch in top:
                     res.append(branch + path)
@@ -226,44 +222,3 @@ class Trail:
         elif self == Trail(None):
             return [[]]
  
-
-top_top = Mountain("top-top", 6, 3)
-top_bot = Mountain("top-bot", 3, 5)
-top_mid = Mountain("top-mid", 7, 2)
-bot_one = Mountain("bot-one", 2, 5)
-bot_two = Mountain("bot-two", 0, 0)
-final   = Mountain("final", 4, 4)
-trail = Trail(TrailSplit(
-Trail(TrailSplit(
-    Trail(TrailSeries(top_top, Trail(None))),
-    Trail(TrailSeries(top_bot, Trail(None))),
-    Trail(TrailSeries(top_mid, Trail(None))),
-)),
-Trail(TrailSeries(bot_one, Trail(TrailSplit(
-    Trail(TrailSeries(bot_two, Trail(None))),
-    Trail(TrailSplit(Trail(None), Trail(None), Trail(None))),
-    Trail(None),
-)))),
-Trail(TrailSeries(final, Trail(None)))
-))
-
-# trail = Trail(TrailSeries(bot_one, Trail(TrailSplit(
-#     Trail(TrailSeries(bot_two, Trail(TrailSeries(top_top, Trail(None))))),
-#     Trail(TrailSplit(Trail(None), Trail(None), Trail(None))),
-#     Trail(None)))))
-# trail =  Trail(TrailSeries(top_top, Trail(TrailSeries(top_bot, Trail(TrailSeries(top_mid, Trail(None)))))))
-
-# print(trail.collect_all_paths([]))
-
-
-
-top_one = Mountain("top-one", 6, 3)
-top_two = Mountain("top-two", 3, 5)
-top_three = Mountain("top-three", 7, 2)
-top_four = Mountain("top_four", 2, 5)
-top_five = Mountain("top_five", 2, 3)
-
-trail = Trail(TrailSplit(Trail(TrailSeries(top_one, Trail(TrailSeries(top_two, Trail(TrailSeries(top_three, Trail(None))))))), Trail(None), 
-                         Trail(None)))
-
-print(trail.collect_all_paths([]))
