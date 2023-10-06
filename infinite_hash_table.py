@@ -60,9 +60,10 @@ class InfiniteHashTable(Generic[K, V]):
 
         :complexity:
             :best case: O(1)
-            :worst case: O(len(key))
+            :worst case: O(A * len(key))
+            where A is the size of the hash table
             Best case occurs when the key is in the original hash table
-            Worst case occurs when each letter of the key has been mapped to a infinite hash table which must be traversed in order to set the item
+            Worst case occurs two words have matching prefixes and so an infinite hash table is created for each letter in the prefix 
         """
         pos = self.hash(key)
         if self.array[pos] is None: #Base case

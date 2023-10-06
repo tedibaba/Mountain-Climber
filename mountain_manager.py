@@ -8,6 +8,7 @@ class MountainManager:
         #We choose a double key table due to the assumed efficiency of O(1) for all its operations as well as being more logical over an infinite hash table as a data structure to store the mountains
         #It also makes it easier to get all the mountains grouped based on the difficulty level of the mountains
         self.mountains = DoubleKeyTable() 
+        self.mountains.hash1 = lambda x : x % self.mountains.table_size
         
 
     def add_mountain(self, mountain: Mountain) -> None:
@@ -16,15 +17,13 @@ class MountainManager:
         key.
         
         :complexity:
-            :best case: O(hash(k1) + hash(k2))
-            :worst case: O(N * hash(k) + N^2 + hash)
-            where N is the length of the new hash table, K is the longest key to be hashed during rehashing,
-            k0 is the key from which the rehashing is not performed on
+            :best case: O(1)
+            :worst case: O(1)
 
         :param mountain: The parameter "mountain" is of type Mountain
         """
 
-        self.mountains[str(mountain.difficulty_level), mountain.name] = mountain #We convert to a string so that the difficulty level can be hashed
+        self.mountains[mountain.difficulty_level, mountain.name] = mountain #We convert to a string so that the difficulty level can be hashed
 
 
     def remove_mountain(self, mountain: Mountain) -> None:
@@ -34,16 +33,13 @@ class MountainManager:
         
         :param mountain: The parameter "mountain" is of type Mountain
         :complexity: 
-            :best case: O(hash(k1) + hash(k2))
-            :worst case: O(N * hask(k) + N^2 + hash(k0))
-            where N is the length of the hash table being deleted from, k1 is the difficulty of the string,
-            k2 is the mountain's name, k is the longest key in the hash table being deleted from, and k0 is
-            the from which the hash table is not deleting.
+            :best case: O(1)
+            :worst case: O(1)
         
         :raises KeyError: If the mountain to delete does not exist
         """
         try:
-            del self.mountains[str(mountain.difficulty_level), mountain.name]
+            del self.mountains[mountain.difficulty_level, mountain.name]
         except KeyError:
             raise KeyError(mountain)
 
@@ -57,8 +53,8 @@ class MountainManager:
         :param new: The "new" parameter is an instance of the Mountain class that represents the updated
         information for a mountain
         """
-        del self.mountains[str(old.difficulty_level), old.name]
-        self.mountains[str(new.difficulty_level), new.name] = new
+        del self.mountains[old.difficulty_level, old.name]
+        self.mountains[new.difficulty_level, new.name] = new
 
     def mountains_with_difficulty(self, diff: int) -> list[Mountain]:
         """
@@ -69,12 +65,12 @@ class MountainManager:
         :return: A list of mountains with a given difficulty level
 
         :complexity:
-            :best case: O(n)
-            :worst case: O(n)
+            :best case: O(1)
+            :worst case: O(1)
             where n is the number of mountains with a given difficulty level
         """
         try:
-            return self.mountains.values(str(diff))
+            return self.mountains.values(diff)
         except KeyError:
             return []
 
@@ -95,6 +91,5 @@ class MountainManager:
         for difficulty in difficulties:
             diff_mountains = self.mountains.values(difficulty)
             mountain_groups.append(diff_mountains)
-        print(mountain_groups)
         return mountain_groups
         

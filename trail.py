@@ -194,11 +194,15 @@ class Trail:
         
         paths = self.collect_all_paths([])
         for path in paths:
-            min_max_path = [float("inf"), 0] #Kept in order as min, max
-            for mountain in path:
-                min_max_path[0] = min(min_max_path[0], mountain.difficulty_level)
-                min_max_path[1] = max(min_max_path[1], mountain.difficulty_level)
-            if min_max_path[1] - min_max_path[0] <= max_difference:
+            # min_max_path = [float("inf"), 0] #Kept in order as min, max
+            for i in range(len(path) - 1):
+                # min_max_path[0] = min(min_max_path[0], mountain.difficulty_level)
+                # min_max_path[1] = max(min_max_path[1], mountain.difficulty_level)
+                # if min_max_path[1] - min_max_path[0] <= max_difference:
+                #     res.append(path)
+                if abs(path[i + 1].difficulty_level - path[i].difficulty_level) > max_difference:
+                    break
+            else:
                 res.append(path)
         return res
     

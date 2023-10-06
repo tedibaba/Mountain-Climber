@@ -85,3 +85,30 @@ class TestTrailMethods(unittest.TestCase):
         expected_res.sort()
 
         self.assertListEqual(res, expected_res)
+
+    @number("7.4")
+ 
+    def test_difficulty_difference_paths_simple(self):
+        m1 = Mountain("m1", 0, 1)
+        m2 = Mountain("m2", 2, 1)
+        m3 = Mountain("m3", 4, 1)
+        m4 = Mountain("m4", 6, 1)
+        m5 = Mountain("m5", 8, 1)
+
+        trail = Trail(TrailSeries(m1, Trail(TrailSeries(m2, Trail(TrailSeries(
+            m3, Trail(TrailSeries(m4, Trail(TrailSeries(m5, Trail(None)))))))))))
+        res = trail.difficulty_difference_paths(3)
+
+        def make_path_string(mountain_list): return ", ".join(
+            map(lambda x: x.name, mountain_list))
+
+        res = list(map(make_path_string, res))
+        res.sort()
+
+        expected_res = [
+            "m1, m2, m3, m4, m5",
+        ]
+        expected_res.sort()
+
+        self.assertListEqual(res, expected_res)
+    
